@@ -45,7 +45,9 @@ func (t *ynabTransaction) assignAccountID(id string) {
 // generateImportID creates an import ID for the transaction
 func (t *ynabTransaction) generateImportID() {
 	formatStr := "YNAB:%v:%s:1"
-	t.ImportID = fmt.Sprintf(formatStr, t.Amount, t.Date)
+	date, _ := time.Parse(ynabDateTimeLayout, t.Date)
+	datetime := date.Format(ynabDateLayout)
+	t.ImportID = fmt.Sprintf(formatStr, t.Amount, datetime)
 }
 
 // Transaction implements the transactable interface.
@@ -77,7 +79,6 @@ type Gateway struct {
 
 // CreateTransaction posts a transaction to the YNAB API
 func (g Gateway) CreateTransaction(transaction ynabTransaction) error {
-	log.Print(transaction.ImportID)
 	goBody := map[string]interface{}{"transaction": transaction}
 
 	status, _, err := g.client.POST(
