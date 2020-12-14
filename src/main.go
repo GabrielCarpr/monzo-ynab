@@ -17,10 +17,10 @@ type App struct {
 
 func (a App) Run() {
 	trans := domain.Transaction{
-		Amount:      1000,
+		Amount:      100000000,
 		Date:        time.Now(),
-		Payee:       "McDonalds",
-		Description: "This is a test",
+		Payee:       "Charlotte",
+		Description: "Heres loads of money",
 	}
 	err := a.ynabRepository.Store(trans)
 	if err != nil {

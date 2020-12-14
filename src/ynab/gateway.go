@@ -22,7 +22,8 @@ const (
 )
 
 const ynabAPI = "https://api.youneedabudget.com/v1"
-const ynabDateLayout = "2006-01-02T15:04"
+const ynabDateLayout = "2006-01-02"
+const ynabDateTimeLayout = ynabDateLayout + "T15:04"
 
 // ynabTransaction is a model of the YNAB API transaction object.
 type ynabTransaction struct {
@@ -47,13 +48,14 @@ func (t *ynabTransaction) assignAccountID(id string) {
 // generateImportID creates an import ID for the transaction
 func (t *ynabTransaction) generateImportID() {
 	formatStr := "YNAB:%v:%s:1"
-	date := time.Now().Format(ynabDateLayout)
-	t.ImportID = fmt.Sprintf(formatStr, t.Amount, date)
+	date, _ := time.Parse(ynabDateLayout, t.Date)
+	datetime := date.Format(ynabDateTimeLayout)
+	t.ImportID = fmt.Sprintf(formatStr, t.Amount, datetime)
 }
 
 // Transaction implements the transactable interface.
 func (t ynabTransaction) Transaction() domain.Transaction {
-	date, err := time.Parse(time.RFC3339, t.Date)
+	date, err := time.Parse(ynabDateLayout, t.Date)
 	if err != nil {
 		panic(err)
 	}
