@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"monzo-ynab/domain"
+	client "monzo-ynab/internal/client"
 	"monzo-ynab/internal/config"
 	"monzo-ynab/ynab"
 	"time"
@@ -34,7 +35,8 @@ func buildApp(config config.Config) App {
 	builder.Add(di.Def{
 		Name: "ynab-gateway",
 		Build: func(ctn di.Container) (interface{}, error) {
-			return ynab.NewGateway(config), nil
+			client := client.NewClient(config.YNABToken)
+			return ynab.NewGateway(config, client), nil
 		},
 	})
 

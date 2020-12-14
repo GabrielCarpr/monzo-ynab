@@ -16,9 +16,11 @@ type configMap map[string]string
 // NewConfig generates a new configuration
 func NewConfig() Config {
 	return Config{
-		YNABToken:     requiredString("YNAB_TOKEN"),
-		YNABAccountID: requiredString("ACCOUNT_ID"),
-		YNABBudgetID:  requiredString("BUDGET_ID"),
+		YNABToken:        requiredString("YNAB_TOKEN"),
+		YNABAccountID:    requiredString("ACCOUNT_ID"),
+		YNABBudgetID:     requiredString("BUDGET_ID"),
+		MonzoAccountID:   requiredString("MONZO_ACCOUNT_ID"),
+		MonzoAccessToken: requiredString("MONZO_ACCESS_TOKEN"),
 	}
 }
 
@@ -27,6 +29,9 @@ type Config struct {
 	YNABToken     string // YNAB Personal Access Token
 	YNABAccountID string // YNAB Account ID to sync
 	YNABBudgetID  string // YNAB Budget ID to sync
+
+	MonzoAccountID   string // Monzo's account ID
+	MonzoAccessToken string // Access Token for Monzo
 }
 
 // defaultString gets a single value, and uses the default if it isn't found.

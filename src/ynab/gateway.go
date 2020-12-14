@@ -1,14 +1,11 @@
 package ynab
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"monzo-ynab/domain"
+	client "monzo-ynab/internal/client"
 	"monzo-ynab/internal/config"
-	"net/http"
 	"time"
 )
 
@@ -48,9 +45,7 @@ func (t *ynabTransaction) assignAccountID(id string) {
 // generateImportID creates an import ID for the transaction
 func (t *ynabTransaction) generateImportID() {
 	formatStr := "YNAB:%v:%s:1"
-	date, _ := time.Parse(ynabDateLayout, t.Date)
-	datetime := date.Format(ynabDateTimeLayout)
-	t.ImportID = fmt.Sprintf(formatStr, t.Amount, datetime)
+	t.ImportID = fmt.Sprintf(formatStr, t.Amount, t.Date)
 }
 
 // Transaction implements the transactable interface.
@@ -70,53 +65,39 @@ func (t ynabTransaction) Transaction() domain.Transaction {
 }
 
 // NewGateway returns a configured, useable Gateway.
-func NewGateway(config config.Config) *Gateway {
-	client := http.Client{}
-	return &Gateway{config, client}
+func NewGateway(config config.Config, c client.IClient) *Gateway {
+	return &Gateway{config, c}
 }
 
 // Gateway is the Gateway over the YNAB API
 type Gateway struct {
 	config config.Config
-	client http.Client
+	client client.IClient
 }
 
 // CreateTransaction posts a transaction to the YNAB API
 func (g Gateway) CreateTransaction(transaction ynabTransaction) error {
-	goBody := map[string]ynabTransaction{"transaction": transaction}
-	body, err := json.Marshal(goBody)
-	if err != nil {
-		return fmt.Errorf("CreateTransaction: %w", err)
-	}
+	log.Print(transaction.ImportID)
+	goBody := map[string]interface{}{"transaction": transaction}
 
-	req, err := http.NewRequest(
-		"POST",
-		fmt.Sprintf("%s/budgets/%s/transactions", ynabAPI, g.config.YNABBudgetID), // URL
-		bytes.NewBuffer(body), // Body
+	status, _, err := g.client.POST(
+		fmt.Sprintf("%s/budgets/%s/transactions", ynabAPI, g.config.YNABBudgetID),
+		goBody,
 	)
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", g.config.YNABToken))
-	req.Header.Add("Content-Type", "application/json")
 	if err != nil {
-		return fmt.Errorf("CreateTransaction: %w")
+		return err
 	}
 
-	resp, err := g.client.Do(req)
-	defer resp.Body.Close()
-	if err != nil {
-		return fmt.Errorf("CreateTransaction: %w", err)
-	}
-	if resp.StatusCode == 201 {
+	if status == 201 {
 		log.Printf("Added transaction %s", transaction.Memo)
 		return nil
 	}
-	if resp.StatusCode == 400 {
+	if status == 400 {
 		return fmt.Errorf("CreateTransaction: Bad request")
 	}
-	if resp.StatusCode == 409 {
+	if status == 409 {
 		log.Printf("Transaction already exists")
 		return nil // The transaction already exists.
 	}
-	bod, err := ioutil.ReadAll(resp.Body)
-	log.Print(string(bod))
-	return fmt.Errorf("CreateTransaction: Unknown response %v", resp.StatusCode)
+	return fmt.Errorf("CreateTransaction: Unknown response %v", status)
 }

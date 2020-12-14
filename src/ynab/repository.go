@@ -20,21 +20,22 @@ type Repository struct {
 
 // newYnabTransaction converts a domain transaction to a ynab DTO transaction
 func (r Repository) newYnabTransaction(t domain.Transaction) ynabTransaction {
-	return ynabTransaction{
+	yt := ynabTransaction{
 		AccountID: r.config.YNABAccountID,
 		PayeeName: t.Payee,
-		Date:      t.Date.Format(ynabDateLayout),
+		Date:      t.Date.Format(ynabDateTimeLayout),
 		Amount:    t.Amount * 10,
 		Memo:      t.Description,
 		Cleared:   CLEARED,
 		Approved:  false,
 	}
+	yt.generateImportID()
+	return yt
 }
 
 // Store stores a transaction in YNAB
 func (r Repository) Store(t domain.Transaction) error {
 	ynabTrans := r.newYnabTransaction(t)
-	ynabTrans.generateImportID()
 
 	err := r.gateway.CreateTransaction(ynabTrans)
 	if err != nil {
