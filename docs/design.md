@@ -47,10 +47,14 @@ What's your YNAB personal API token?
 ```
 install
 run [--port]
-set <option> <value>
+set-option <option> <value>
 sync <previous days>
 update [--enable-auto]
 ```
+
+## Implementation
+- Use PromptUI for CLI, which easily creates an interactive console application
+
 
 ## Questions
 - Will YNAB dedupe transactions automatically?
@@ -58,4 +62,5 @@ update [--enable-auto]
 - On receipt of a webhook from Monzo, how do I verify it's validity?
 - Will I need to request other information from Monzo before sending it to YNAB?
 - Will I need to perform any other operations on YNAB before sending the transaction?
+    - As long as I have the budget ID, and the account ID, I can use all the information from the transaction in Monzo to create the YNAB transaction.
 - How do I let users authenticate with Monzo?
