@@ -58,7 +58,6 @@ func (t ynabTransaction) Transaction() domain.Transaction {
 	}
 
 	return domain.Transaction{
-		YNABId:      t.ID,
 		Amount:      t.Amount / 10,
 		Date:        date,
 		Payee:       t.PayeeName,

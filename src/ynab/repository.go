@@ -23,13 +23,13 @@ func (r Repository) newYnabTransaction(t domain.Transaction) ynabTransaction {
 	yt := ynabTransaction{
 		AccountID: r.config.YNABAccountID,
 		PayeeName: t.Payee,
-		Date:      t.Date.Format(ynabDateTimeLayout),
+		Date:      t.Date.Format(ynabDateLayout),
 		Amount:    t.Amount * 10,
 		Memo:      t.Description,
 		Cleared:   CLEARED,
 		Approved:  false,
+		ImportID:  fmt.Sprintf("monzo:%s", t.MonzoID),
 	}
-	yt.generateImportID()
 	return yt
 }
 

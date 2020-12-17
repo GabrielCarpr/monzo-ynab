@@ -13,6 +13,7 @@ const monzoAPIUrl = "https://api.monzo.com"
 
 // monzoTransaction represents a Monzo API DTO (or, just the fields we need.)
 type monzoTransaction struct {
+	ID          string `json:"id"`
 	Description string `json:"description"`
 	Amount      int    `json:"amount"`
 	Settled     string `json:"settled"`
@@ -29,6 +30,7 @@ func (t monzoTransaction) Transaction() domain.Transaction {
 		Date:        date,
 		Payee:       t.Description,
 		Description: t.Description,
+		MonzoID:     t.ID,
 	}
 }
 
