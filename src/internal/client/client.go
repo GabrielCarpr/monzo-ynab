@@ -39,10 +39,10 @@ func (c Client) request(method string, url string, body map[string]interface{}) 
 	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", c.token))
 
 	response, err := c.client.Do(req)
-	defer response.Body.Close()
 	if err != nil {
 		return 0, []byte{}, err
 	}
+	defer response.Body.Close()
 
 	bod, err := ioutil.ReadAll(response.Body)
 	if err != nil {
