@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"monzo-ynab/commands"
 	"monzo-ynab/internal/app"
+	client "monzo-ynab/internal/client"
 	"monzo-ynab/internal/config"
 	"monzo-ynab/internal/tester"
 	"testing"
@@ -18,6 +19,7 @@ func getTestConfig() config.Config {
 		YNABBudgetID:     "test_budget_id",
 		MonzoAccountID:   "test_monzo_id",
 		MonzoAccessToken: "test_monzo_token",
+		BaseURL:          "http://testurl",
 	}
 }
 
@@ -30,8 +32,19 @@ type clientMock struct {
 	getStatus   int
 }
 
-func (c *clientMock) POST(url string, body map[string]interface{}) (int, []byte, error) {
-	c.postReceived = body
+func (c *clientMock) POST(url string, body interface{}) (int, []byte, error) {
+	switch body.(type) {
+	case client.JSONBody:
+		c.postReceived = body.(client.JSONBody)
+		break
+	case client.FormBody:
+		c.postReceived = body.(client.FormBody)
+		break
+	case map[string]interface{}:
+		c.postReceived = body.(map[string]interface{})
+		break
+	}
+
 	res, _ := json.Marshal(c.postResponse)
 	return c.postStatus, res, nil
 }
@@ -60,8 +73,7 @@ func Test_ImportsTransactions(t *testing.T) {
 	builder := app.BuildApp(getTestConfig())
 	tester.SetDep(builder, "ynab-client", &mock)
 	tester.SetDep(builder, "monzo-client", &mock)
-	ctn := builder.Build()
-	sync := ctn.Get("sync-command").(*commands.Sync)
+	sync := builder.Build().Get("sync-command").(*commands.Sync)
 
 	err := sync.Execute(3)
 	if err != nil {

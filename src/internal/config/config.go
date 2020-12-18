@@ -21,6 +21,7 @@ func NewConfig() Config {
 		YNABBudgetID:     requiredString("BUDGET_ID"),
 		MonzoAccountID:   requiredString("MONZO_ACCOUNT_ID"),
 		MonzoAccessToken: requiredString("MONZO_ACCESS_TOKEN"),
+		BaseURL:          defaultString("BASE_URL", "http://localhost:8080"),
 	}
 }
 
@@ -32,6 +33,8 @@ type Config struct {
 
 	MonzoAccountID   string // Monzo's account ID
 	MonzoAccessToken string // Access Token for Monzo
+
+	BaseURL string // The sync app's URL
 }
 
 // defaultString gets a single value, and uses the default if it isn't found.

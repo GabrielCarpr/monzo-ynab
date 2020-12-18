@@ -36,3 +36,36 @@ func (r TransactionRepository) List(days int) ([]domain.Transaction, error) {
 	}
 	return transactions, nil
 }
+
+// NewWebhookRepository returns a WebhookRepository.
+func NewWebhookRepository(c config.Config, g *Gateway) *WebhookRepository {
+	return &WebhookRepository{c, g}
+}
+
+// WebhookRepository houses webhook methods for Monzo.
+type WebhookRepository struct {
+	config  config.Config
+	gateway *Gateway
+}
+
+// Register idempotently creates a webhook for a path.
+func (r WebhookRepository) Register(path string) error {
+	webhooks, err := r.gateway.ListWebhooks()
+	if err != nil {
+		return err
+	}
+
+	url := fmt.Sprintf("%s%s", r.config.BaseURL, path)
+
+	for _, webhook := range webhooks {
+		if webhook.AccountID == r.config.MonzoAccountID && webhook.URL == url {
+			return nil
+		}
+	}
+
+	err = r.gateway.RegisterWebhook(url)
+	if err != nil {
+		return err
+	}
+	return nil
+}
