@@ -94,6 +94,15 @@ func BuildApp(config config.Config) *di.Builder {
 	})
 
 	builder.Add(di.Def{
+		Name: "convert-transaction-command",
+		Build: func(ctn di.Container) (interface{}, error) {
+			ynabRepo := ctn.Get("ynab-repository").(*ynab.Repository)
+			monzoRepo := ctn.Get("monzo-repository").(*monzo.TransactionRepository)
+			return commands.NewConvertCommand(config, ynabRepo, monzoRepo), nil
+		},
+	})
+
+	builder.Add(di.Def{
 		Name: "monzo-webhook-repository",
 		Build: func(ctn di.Container) (interface{}, error) {
 			monzoGateway := ctn.Get("monzo-gateway").(*monzo.Gateway)
@@ -107,6 +116,7 @@ func BuildApp(config config.Config) *di.Builder {
 			return &commands.Commands{
 				Sync:                 ctn.Get("sync-command").(*commands.Sync),
 				RegisterMonzoWebhook: ctn.Get("register-webhook-command").(*commands.RegisterMonzoWebhook),
+				Convert:              ctn.Get("convert-transaction-command").(*commands.Convert),
 			}, nil
 		},
 	})

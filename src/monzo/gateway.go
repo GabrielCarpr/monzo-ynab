@@ -11,7 +11,7 @@ import (
 
 const monzoAPIUrl = "https://api.monzo.com"
 
-// monzoTransaction represents a Monzo API DTO (or, just the fields we need.)
+// Transaction represents a Monzo API DTO (or, just the fields we need.)
 type Transaction struct {
 	ID          string `json:"id"`
 	Description string `json:"description"`
@@ -19,10 +19,15 @@ type Transaction struct {
 	Settled     string `json:"settled"`
 }
 
-type transactionResponse struct {
+type transactionsResponse struct {
 	Transactions []Transaction `json:"transactions"`
 }
 
+type transactionResponse struct {
+	Transaction Transaction `json:"transaction"`
+}
+
+// Transaction converts a Monzo transaction to a domain Transaction.
 func (t Transaction) Transaction() domain.Transaction {
 	date, _ := time.Parse(time.RFC3339, t.Settled)
 	return domain.Transaction{
@@ -56,7 +61,7 @@ func (g Gateway) ListTransactions(since string) ([]Transaction, error) {
 		return []Transaction{}, fmt.Errorf("API did not return 200: %v %v", status, string(body))
 	}
 
-	var tr transactionResponse
+	var tr transactionsResponse
 	if err := json.Unmarshal(body, &tr); err != nil {
 		return tr.Transactions, fmt.Errorf("Failed reading Monzo API response: %w", err)
 	}
@@ -108,4 +113,23 @@ func (g Gateway) ListWebhooks() ([]Webhook, error) {
 	}
 
 	return response.Webhooks, nil
+}
+
+// GetTransaction fetches a Transaction from an ID.
+func (g Gateway) GetTransaction(id string) (Transaction, error) {
+	status, body, err := g.client.GET(fmt.Sprintf("%s/transactions/%s", monzoAPIUrl, id))
+	if err != nil {
+		return Transaction{}, err
+	}
+	if status != 200 {
+		return Transaction{}, fmt.Errorf("API returned error: %v %v", status, string(body))
+	}
+
+	var response transactionResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return Transaction{}, err
+	}
+
+	return response.Transaction, nil
 }

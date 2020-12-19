@@ -18,6 +18,16 @@ type TransactionRepository struct {
 	gateway *Gateway
 }
 
+// Get fetches a Transaction from Monzo.
+func (r TransactionRepository) Get(id string) (domain.Transaction, error) {
+	tx, err := r.gateway.GetTransaction(id)
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+
+	return tx.Transaction(), nil
+}
+
 // List lists all transactions since x days.
 func (r TransactionRepository) List(days int) ([]domain.Transaction, error) {
 	if days > 90 || days < 1 {
