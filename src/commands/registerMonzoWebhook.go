@@ -7,18 +7,18 @@ import (
 )
 
 // NewRegisterWebhook returns a RegisterWebhook command.
-func NewRegisterWebhook(c config.Config, g *monzo.WebhookRepository) *RegisterWebhook {
-	return &RegisterWebhook{c, g}
+func NewRegisterWebhook(c config.Config, g *monzo.WebhookRepository) *RegisterMonzoWebhook {
+	return &RegisterMonzoWebhook{c, g}
 }
 
-// RegisterWebhook is a command that creates a Monzo webhook.
-type RegisterWebhook struct {
+// RegisterMonzoWebhook is a command that creates a Monzo webhook.
+type RegisterMonzoWebhook struct {
 	config     config.Config
 	repository *monzo.WebhookRepository
 }
 
 // Execute runs the command.
-func (c RegisterWebhook) Execute(path string) error {
+func (c RegisterMonzoWebhook) Execute(path string) error {
 	err := c.repository.Register(path)
 	if err != nil {
 		return err

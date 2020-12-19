@@ -19,7 +19,7 @@ type App struct {
 
 // Run starts the app.
 func (a App) Run() {
-	err := a.commands.RegisterWebhook.Execute("/test")
+	err := a.commands.RegisterMonzoWebhook.Execute("/test")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -105,8 +105,8 @@ func BuildApp(config config.Config) *di.Builder {
 		Name: "commands",
 		Build: func(ctn di.Container) (interface{}, error) {
 			return &commands.Commands{
-				Sync:            ctn.Get("sync-command").(*commands.Sync),
-				RegisterWebhook: ctn.Get("register-webhook-command").(*commands.RegisterWebhook),
+				Sync:                 ctn.Get("sync-command").(*commands.Sync),
+				RegisterMonzoWebhook: ctn.Get("register-webhook-command").(*commands.RegisterMonzoWebhook),
 			}, nil
 		},
 	})
