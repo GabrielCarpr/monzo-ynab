@@ -78,7 +78,7 @@ type Gateway struct {
 
 // CreateTransaction posts a transaction to the YNAB API
 func (g Gateway) CreateTransaction(transaction ynabTransaction) error {
-	goBody := map[string]interface{}{"transaction": transaction}
+	goBody := client.JSONBody{"transaction": transaction}
 
 	status, _, err := g.client.POST(
 		fmt.Sprintf("%s/budgets/%s/transactions", ynabAPI, g.config.YNABBudgetID),

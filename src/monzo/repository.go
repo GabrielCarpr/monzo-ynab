@@ -75,7 +75,7 @@ func (r WebhookRepository) Register(path string) error {
 
 	err = r.gateway.RegisterWebhook(url)
 	if err != nil {
-		return err
+		return fmt.Errorf("Register: %w", err)
 	}
 	return nil
 }

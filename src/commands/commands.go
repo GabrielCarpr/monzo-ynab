@@ -4,5 +4,5 @@ package commands
 type Commands struct {
 	*Sync
 	*RegisterMonzoWebhook
-	*Convert
+	*Store
 }

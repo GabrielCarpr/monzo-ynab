@@ -2,6 +2,7 @@ package ynab
 
 import (
 	"fmt"
+	"log"
 
 	"monzo-ynab/domain"
 	"monzo-ynab/internal/config"
@@ -36,6 +37,7 @@ func (r Repository) newYnabTransaction(t domain.Transaction) ynabTransaction {
 // Store stores a transaction in YNAB
 func (r Repository) Store(t domain.Transaction) error {
 	ynabTrans := r.newYnabTransaction(t)
+	log.Print(ynabTrans)
 
 	err := r.gateway.CreateTransaction(ynabTrans)
 	if err != nil {

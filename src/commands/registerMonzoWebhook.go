@@ -21,7 +21,7 @@ type RegisterMonzoWebhook struct {
 func (c RegisterMonzoWebhook) Execute(path string) error {
 	err := c.repository.Register(path)
 	if err != nil {
-		return err
+		return fmt.Errorf("Could not register: %w", err)
 	}
 	fmt.Printf("Monzo webhook registered")
 	return nil

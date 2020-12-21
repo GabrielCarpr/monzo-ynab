@@ -103,7 +103,7 @@ func (g Gateway) ListWebhooks() ([]Webhook, error) {
 		return []Webhook{}, err
 	}
 	if status != 200 {
-		return []Webhook{}, fmt.Errorf("API returned error: %v %v", status, body)
+		return []Webhook{}, fmt.Errorf("API returned error: %v %v", status, string(body))
 	}
 
 	var response listWebhookResponse

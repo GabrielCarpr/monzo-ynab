@@ -6,7 +6,9 @@ import (
 	client "monzo-ynab/internal/client"
 	"monzo-ynab/internal/config"
 	"monzo-ynab/monzo"
+	"monzo-ynab/rest"
 	"monzo-ynab/ynab"
+	"net/http"
 
 	di "github.com/sarulabs/di/v2"
 )
@@ -15,14 +17,17 @@ import (
 type App struct {
 	config   config.Config
 	commands *commands.Commands
+	rest     *rest.Handler
 }
 
 // Run starts the app.
 func (a App) Run() {
-	err := a.commands.RegisterMonzoWebhook.Execute("/test")
+	err := a.commands.RegisterMonzoWebhook.Execute("/events/monzo")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Fatal(http.ListenAndServe(":8080", a.rest))
 }
 
 // BuildApp returns a DI container.
@@ -33,7 +38,8 @@ func BuildApp(config config.Config) *di.Builder {
 		Name: "app",
 		Build: func(ctn di.Container) (interface{}, error) {
 			repo := ctn.Get("commands").(*commands.Commands)
-			return App{config, repo}, nil
+			rest := ctn.Get("rest-handler").(*rest.Handler)
+			return App{config, repo, rest}, nil
 		},
 	})
 
@@ -94,11 +100,10 @@ func BuildApp(config config.Config) *di.Builder {
 	})
 
 	builder.Add(di.Def{
-		Name: "convert-transaction-command",
+		Name: "store-transaction-command",
 		Build: func(ctn di.Container) (interface{}, error) {
 			ynabRepo := ctn.Get("ynab-repository").(*ynab.Repository)
-			monzoRepo := ctn.Get("monzo-repository").(*monzo.TransactionRepository)
-			return commands.NewConvertCommand(config, ynabRepo, monzoRepo), nil
+			return commands.NewStoreCommand(config, ynabRepo), nil
 		},
 	})
 
@@ -116,7 +121,7 @@ func BuildApp(config config.Config) *di.Builder {
 			return &commands.Commands{
 				Sync:                 ctn.Get("sync-command").(*commands.Sync),
 				RegisterMonzoWebhook: ctn.Get("register-webhook-command").(*commands.RegisterMonzoWebhook),
-				Convert:              ctn.Get("convert-transaction-command").(*commands.Convert),
+				Store:                ctn.Get("store-transaction-command").(*commands.Store),
 			}, nil
 		},
 	})
@@ -125,6 +130,14 @@ func BuildApp(config config.Config) *di.Builder {
 		Name: "ynab-client",
 		Build: func(ctn di.Container) (interface{}, error) {
 			return client.NewClient(config.YNABToken), nil
+		},
+	})
+
+	builder.Add(di.Def{
+		Name: "rest-handler",
+		Build: func(ctn di.Container) (interface{}, error) {
+			commands := ctn.Get("commands").(*commands.Commands)
+			return rest.NewHandler(config, commands), nil
 		},
 	})
 

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -76,7 +75,6 @@ func (c Client) transformBody(body interface{}) ([]byte, error) {
 
 func (c Client) request(method string, url string, body interface{}) (int, []byte, error) {
 	jsonBytes, err := c.transformBody(body)
-	log.Print(string(jsonBytes))
 	if err != nil {
 		return 0, []byte{}, err
 	}
