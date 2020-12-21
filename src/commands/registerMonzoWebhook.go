@@ -23,6 +23,6 @@ func (c RegisterMonzoWebhook) Execute(path string) error {
 	if err != nil {
 		return fmt.Errorf("Could not register: %w", err)
 	}
-	fmt.Printf("Monzo webhook registered")
+	fmt.Printf("Monzo webhook registered for %s", path)
 	return nil
 }

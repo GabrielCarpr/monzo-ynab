@@ -2,7 +2,6 @@ package ynab
 
 import (
 	"fmt"
-	"log"
 
 	"monzo-ynab/domain"
 	"monzo-ynab/internal/config"
@@ -20,8 +19,8 @@ type Repository struct {
 }
 
 // newYnabTransaction converts a domain transaction to a ynab DTO transaction
-func (r Repository) newYnabTransaction(t domain.Transaction) ynabTransaction {
-	yt := ynabTransaction{
+func (r Repository) newYnabTransaction(t domain.Transaction) Transaction {
+	yt := Transaction{
 		AccountID: r.config.YNABAccountID,
 		PayeeName: t.Payee,
 		Date:      t.Date.Format(ynabDateLayout),
@@ -37,7 +36,6 @@ func (r Repository) newYnabTransaction(t domain.Transaction) ynabTransaction {
 // Store stores a transaction in YNAB
 func (r Repository) Store(t domain.Transaction) error {
 	ynabTrans := r.newYnabTransaction(t)
-	log.Print(ynabTrans)
 
 	err := r.gateway.CreateTransaction(ynabTrans)
 	if err != nil {

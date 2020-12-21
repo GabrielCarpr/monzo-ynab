@@ -22,7 +22,7 @@ type App struct {
 
 // Run starts the app.
 func (a App) Run() {
-	err := a.commands.RegisterMonzoWebhook.Execute("/events/monzo")
+	err := a.commands.RegisterMonzoWebhook.Execute("/events/monzo/")
 	if err != nil {
 		log.Fatal(err)
 	}

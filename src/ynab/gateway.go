@@ -22,8 +22,8 @@ const ynabAPI = "https://api.youneedabudget.com/v1"
 const ynabDateLayout = "2006-01-02"
 const ynabDateTimeLayout = ynabDateLayout + "T15:04"
 
-// ynabTransaction is a model of the YNAB API transaction object.
-type ynabTransaction struct {
+// Transaction is a model of the YNAB API transaction object.
+type Transaction struct {
 	ID         string  `json:"id,omitempty"`
 	AccountID  string  `json:"account_id"`
 	PayeeID    *string `json:"payee_id"`
@@ -38,12 +38,12 @@ type ynabTransaction struct {
 }
 
 // AssignAccountID sets the account ID to sync to
-func (t *ynabTransaction) assignAccountID(id string) {
+func (t *Transaction) assignAccountID(id string) {
 	t.AccountID = id
 }
 
 // generateImportID creates an import ID for the transaction
-func (t *ynabTransaction) generateImportID() {
+func (t *Transaction) generateImportID() {
 	formatStr := "YNAB:%v:%s:1"
 	date, _ := time.Parse(ynabDateTimeLayout, t.Date)
 	datetime := date.Format(ynabDateLayout)
@@ -51,7 +51,7 @@ func (t *ynabTransaction) generateImportID() {
 }
 
 // Transaction implements the transactable interface.
-func (t ynabTransaction) Transaction() domain.Transaction {
+func (t Transaction) Transaction() domain.Transaction {
 	date, err := time.Parse(ynabDateLayout, t.Date)
 	if err != nil {
 		panic(err)
@@ -77,7 +77,7 @@ type Gateway struct {
 }
 
 // CreateTransaction posts a transaction to the YNAB API
-func (g Gateway) CreateTransaction(transaction ynabTransaction) error {
+func (g Gateway) CreateTransaction(transaction Transaction) error {
 	goBody := client.JSONBody{"transaction": transaction}
 
 	status, _, err := g.client.POST(

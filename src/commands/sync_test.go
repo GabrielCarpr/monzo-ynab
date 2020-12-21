@@ -1,65 +1,20 @@
 package commands_test
 
 import (
-	"encoding/json"
 	"monzo-ynab/commands"
 	"monzo-ynab/internal/app"
-	client "monzo-ynab/internal/client"
-	"monzo-ynab/internal/config"
 	"monzo-ynab/internal/tester"
 	"testing"
 
 	"github.com/mitchellh/mapstructure"
 )
 
-func getTestConfig() config.Config {
-	return config.Config{
-		YNABToken:        "test",
-		YNABAccountID:    "test_acc_id",
-		YNABBudgetID:     "test_budget_id",
-		MonzoAccountID:   "test_monzo_id",
-		MonzoAccessToken: "test_monzo_token",
-		BaseURL:          "http://testurl",
-	}
-}
-
-type clientMock struct {
-	postResponse map[string]interface{}
-	postStatus   int
-	postReceived map[string]interface{}
-
-	getResponse map[string]interface{}
-	getStatus   int
-}
-
-func (c *clientMock) POST(url string, body interface{}) (int, []byte, error) {
-	switch body.(type) {
-	case client.JSONBody:
-		c.postReceived = body.(client.JSONBody)
-		break
-	case client.FormBody:
-		c.postReceived = body.(client.FormBody)
-		break
-	case map[string]interface{}:
-		c.postReceived = body.(map[string]interface{})
-		break
-	}
-
-	res, _ := json.Marshal(c.postResponse)
-	return c.postStatus, res, nil
-}
-
-func (c *clientMock) GET(url string) (int, []byte, error) {
-	res, _ := json.Marshal(c.getResponse)
-	return c.getStatus, res, nil
-}
-
 func Test_ImportsTransactions(t *testing.T) {
-	mock := clientMock{}
-	mock.postStatus = 201
-	mock.getStatus = 200
+	mock := tester.ClientMock{}
+	mock.PostStatus = 201
+	mock.GetStatus = 200
 
-	mock.getResponse = map[string]interface{}{
+	mock.GetResponse = map[string]interface{}{
 		"transactions": []map[string]interface{}{
 			{
 				"id":          "tx_ffi39fjkls",
@@ -70,7 +25,7 @@ func Test_ImportsTransactions(t *testing.T) {
 		},
 	}
 
-	builder := app.BuildApp(getTestConfig())
+	builder := app.BuildApp(tester.GetTestConfig())
 	tester.SetDep(builder, "ynab-client", &mock)
 	tester.SetDep(builder, "monzo-client", &mock)
 	sync := builder.Build().Get("sync-command").(*commands.Sync)
@@ -80,7 +35,7 @@ func Test_ImportsTransactions(t *testing.T) {
 		t.Errorf("Produced error: %s", err)
 	}
 
-	postReceived := mock.postReceived["transaction"]
+	postReceived := mock.PostReceived["transaction"]
 	var received map[string]interface{}
 	mapstructure.Decode(postReceived, &received)
 	if received["Amount"].(int) != 25000 {
