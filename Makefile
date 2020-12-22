@@ -2,7 +2,9 @@ TAG?=$(shell cat version)
 IMAGE?=gabrielcarpr/monzo-ynab
 TAGGED_IMAGE?=$(IMAGE):$(TAG)
 
-.PHONY: test build image clean
+.PHONY: all test build image clean
+
+all: build
 
 build: clean test src/build/monzo-ynab image
 
