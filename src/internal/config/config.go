@@ -27,14 +27,25 @@ func NewConfig() Config {
 
 // Config contains all app configuration
 type Config struct {
-	YNABToken     string // YNAB Personal Access Token
-	YNABAccountID string // YNAB Account ID to sync
-	YNABBudgetID  string // YNAB Budget ID to sync
+	YNABToken     string `json:"YNAB_TOKEN"` // YNAB Personal Access Token
+	YNABAccountID string `json:"ACCOUNT_ID"` // YNAB Account ID to sync
+	YNABBudgetID  string `json:"BUDGET_ID"`  // YNAB Budget ID to sync
 
-	MonzoAccountID   string // Monzo's account ID
-	MonzoAccessToken string // Access Token for Monzo
+	MonzoAccountID   string `json:"MONZO_ACCOUNT_ID"`   // Monzo's account ID
+	MonzoAccessToken string `json:"MONZO_ACCESS_TOKEN"` // Access Token for Monzo
 
-	BaseURL string // The sync app's URL
+	BaseURL string `json:"BASE_URL"` // The sync app's URL
+}
+
+// Persist saves the config to the config file in `configFileLocation`.
+func (c Config) Persist() error {
+	bytes, err := json.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	ioutil.WriteFile(configFileLocation, bytes, 0644)
+	return nil
 }
 
 // defaultString gets a single value, and uses the default if it isn't found.

@@ -11,13 +11,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCLI(c *commands.Commands, r *rest.Handler) *CLI {
-	return &CLI{appCommands: c, restHandler: r}
+func NewCLI(c *commands.Commands, r *rest.Handler, i *Installer) *CLI {
+	return &CLI{appCommands: c, restHandler: r, installer: i}
 }
 
 type CLI struct {
 	appCommands *commands.Commands
 	restHandler *rest.Handler
+	installer   *Installer
 
 	rootCmd *cobra.Command
 
@@ -52,8 +53,18 @@ func (c *CLI) Init() {
 		},
 	}
 
+	installCmd := &cobra.Command{
+		Use:   "install",
+		Short: "Installs Monzo-to-YNAB",
+		Long:  "Runs the interactive installer the configure and setup Monzo-to-YNAB",
+		Run: func(cmd *cobra.Command, args []string) {
+			c.installer.Install()
+		},
+	}
+
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(syncCmd)
+	rootCmd.AddCommand(installCmd)
 	c.rootCmd = rootCmd
 }
 

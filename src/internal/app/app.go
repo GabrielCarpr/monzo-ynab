@@ -1,7 +1,6 @@
 package app
 
 import (
-	"log"
 	"monzo-ynab/cli"
 	"monzo-ynab/commands"
 	client "monzo-ynab/internal/client"
@@ -22,11 +21,6 @@ type App struct {
 
 // Run starts the app.
 func (a App) Run() {
-	err := a.commands.RegisterMonzoWebhook.Execute("/events/monzo/")
-	if err != nil {
-		log.Fatalf("Failed to register Monzo webhook: %s", err)
-	}
-
 	a.cli.Init()
 	a.cli.Run()
 }
@@ -49,7 +43,16 @@ func BuildApp(config config.Config) *di.Builder {
 		Build: func(ctn di.Container) (interface{}, error) {
 			cmds := ctn.Get("commands").(*commands.Commands)
 			handler := ctn.Get("rest-handler").(*rest.Handler)
-			return cli.NewCLI(cmds, handler), nil
+			installer := ctn.Get("installer").(*cli.Installer)
+			return cli.NewCLI(cmds, handler, installer), nil
+		},
+	})
+
+	builder.Add(di.Def{
+		Name: "installer",
+		Build: func(ctn di.Container) (interface{}, error) {
+			cmds := ctn.Get("commands").(*commands.Commands)
+			return cli.NewInstaller(cmds), nil
 		},
 	})
 
