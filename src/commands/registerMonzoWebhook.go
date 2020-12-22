@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"log"
 	"monzo-ynab/internal/config"
 	"monzo-ynab/monzo"
 )
@@ -23,6 +24,6 @@ func (c RegisterMonzoWebhook) Execute(path string) error {
 	if err != nil {
 		return fmt.Errorf("Could not register: %w", err)
 	}
-	fmt.Printf("Monzo webhook registered for %s", path)
+	log.Printf("Monzo webhook registered for %s", path)
 	return nil
 }

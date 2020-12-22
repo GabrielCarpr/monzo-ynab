@@ -2,13 +2,13 @@ package app
 
 import (
 	"log"
+	"monzo-ynab/cli"
 	"monzo-ynab/commands"
 	client "monzo-ynab/internal/client"
 	"monzo-ynab/internal/config"
 	"monzo-ynab/monzo"
 	"monzo-ynab/rest"
 	"monzo-ynab/ynab"
-	"net/http"
 
 	di "github.com/sarulabs/di/v2"
 )
@@ -17,17 +17,18 @@ import (
 type App struct {
 	config   config.Config
 	commands *commands.Commands
-	rest     *rest.Handler
+	cli      *cli.CLI
 }
 
 // Run starts the app.
 func (a App) Run() {
 	err := a.commands.RegisterMonzoWebhook.Execute("/events/monzo/")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to register Monzo webhook: %s", err)
 	}
 
-	log.Fatal(http.ListenAndServe(":8080", a.rest))
+	a.cli.Init()
+	a.cli.Run()
 }
 
 // BuildApp returns a DI container.
@@ -37,9 +38,18 @@ func BuildApp(config config.Config) *di.Builder {
 	builder.Add(di.Def{
 		Name: "app",
 		Build: func(ctn di.Container) (interface{}, error) {
-			repo := ctn.Get("commands").(*commands.Commands)
-			rest := ctn.Get("rest-handler").(*rest.Handler)
-			return App{config, repo, rest}, nil
+			cli := ctn.Get("cli").(*cli.CLI)
+			cmds := ctn.Get("commands").(*commands.Commands)
+			return App{config, cmds, cli}, nil
+		},
+	})
+
+	builder.Add(di.Def{
+		Name: "cli",
+		Build: func(ctn di.Container) (interface{}, error) {
+			cmds := ctn.Get("commands").(*commands.Commands)
+			handler := ctn.Get("rest-handler").(*rest.Handler)
+			return cli.NewCLI(cmds, handler), nil
 		},
 	})
 

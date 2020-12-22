@@ -49,7 +49,6 @@ install
 run [--port]
 set-option <option> <value>
 sync <previous days>
-update [--enable-auto]
 ```
 
 ## Implementation
