@@ -1,4 +1,4 @@
-TAG?=$(shell cat ${version})
+TAG?=$(shell cat version)
 IMAGE?=gabrielcarpr/monzo-ynab
 TAGGED_IMAGE?=$(IMAGE):$(TAG)
 
