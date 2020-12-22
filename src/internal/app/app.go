@@ -44,7 +44,7 @@ func BuildApp(config config.Config) *di.Builder {
 			cmds := ctn.Get("commands").(*commands.Commands)
 			handler := ctn.Get("rest-handler").(*rest.Handler)
 			installer := ctn.Get("installer").(*cli.Installer)
-			return cli.NewCLI(cmds, handler, installer), nil
+			return cli.NewCLI(cmds, handler, installer, config), nil
 		},
 	})
 

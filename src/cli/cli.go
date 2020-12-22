@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"monzo-ynab/commands"
+	"monzo-ynab/internal/config"
 	"monzo-ynab/rest"
 	"net/http"
 	"strconv"
@@ -11,11 +12,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewCLI(c *commands.Commands, r *rest.Handler, i *Installer) *CLI {
-	return &CLI{appCommands: c, restHandler: r, installer: i}
+// NewCLI returns a configured CLI
+func NewCLI(c *commands.Commands, r *rest.Handler, i *Installer, cfg config.Config) *CLI {
+	return &CLI{appCommands: c, restHandler: r, installer: i, config: cfg}
 }
 
+// CLI is the apps command line interface
 type CLI struct {
+	config      config.Config
 	appCommands *commands.Commands
 	restHandler *rest.Handler
 	installer   *Installer
@@ -25,6 +29,7 @@ type CLI struct {
 	restPort string
 }
 
+// Init builds the CLI
 func (c *CLI) Init() {
 	rootCmd := &cobra.Command{Use: "monzo-ynab"}
 
@@ -62,12 +67,38 @@ func (c *CLI) Init() {
 		},
 	}
 
+	configCmd := &cobra.Command{
+		Use:   "configure [option] [value]",
+		Short: "Set a configuration value",
+		Args:  cobra.ExactArgs(2),
+		Run: func(cmd *cobra.Command, args []string) {
+			key := args[0]
+			val := args[1]
+
+			err := c.config.Set(key, val)
+			if err != nil {
+				log.Fatal(err)
+			}
+		},
+	}
+
+	webhookCmd := &cobra.Command{
+		Use:   "register-webhooks",
+		Short: "Register Monzo webhooks",
+		Run: func(cmd *cobra.Command, args []string) {
+			c.appCommands.RegisterMonzoWebhook.Execute("/events/monzo/")
+		},
+	}
+
 	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(installCmd)
+	rootCmd.AddCommand(configCmd)
+	rootCmd.AddCommand(webhookCmd)
 	c.rootCmd = rootCmd
 }
 
+// Run runs the CLI
 func (c CLI) Run() {
 	c.rootCmd.Execute()
 }

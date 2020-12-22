@@ -35,16 +35,19 @@ func (a answers) config() config.Config {
 	}
 }
 
+// NewInstaller returns a fresh installer
 func NewInstaller(c *commands.Commands) *Installer {
 	return &Installer{commands: c}
 }
 
+// Installer sets the app up on the machine.
 type Installer struct {
 	answers answers
 
 	commands *commands.Commands
 }
 
+// Install runs an interactive CLI to configure the app.
 func (i *Installer) Install() {
 	firstQuestions := []*survey.Question{
 		{
@@ -59,10 +62,7 @@ func (i *Installer) Install() {
 			Name:   "ynab-budget",
 			Prompt: &survey.Input{Message: "What's your YNAB budget ID?"},
 		},
-		{
-			Name:   "monzo-account",
-			Prompt: &survey.Input{Message: "What's your Monzo account ID?"},
-		},
+
 		{
 			Name:   "setup-monzo",
 			Prompt: &survey.Confirm{Message: "Do you want to connect Monzo"},
@@ -75,22 +75,15 @@ func (i *Installer) Install() {
 			Prompt: &survey.Input{Message: "What URL should Monzo webhooks be sent to?"},
 		},
 		{
+			Name:   "monzo-account",
+			Prompt: &survey.Input{Message: "What's your Monzo account ID?"},
+		},
+		{
 			Name: "monzo-token",
 			Prompt: &survey.Input{
 				Message: "What's your Monzo access token?",
 				Help:    "This will only be used to setup webhooks and sync",
 			},
-		},
-		{
-			Name:   "initial-sync",
-			Prompt: &survey.Confirm{Message: "Do you want perform a sync now?"},
-		},
-	}
-
-	thirdQuestions := []*survey.Question{
-		{
-			Name:   "sync-days",
-			Prompt: &survey.Input{Message: "How many previous days do you want to sync?"},
 		},
 	}
 
@@ -106,32 +99,8 @@ func (i *Installer) Install() {
 		}
 	}
 
-	if i.answers.InitialSync {
-		err := survey.Ask(thirdQuestions, &i.answers)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
 	config := i.answers.config()
 	config.Persist()
-	log.Print("Configuration complete")
-
-	if i.answers.SetupMonzo {
-		log.Print("Registering Monzo webhook...")
-		err = i.commands.RegisterMonzoWebhook.Execute("/events/monzo/")
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	if i.answers.InitialSync {
-		log.Print("Starting sync...")
-		err = i.commands.Sync.Execute(i.answers.SyncDays)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 
 	log.Print("Installation complete")
 }

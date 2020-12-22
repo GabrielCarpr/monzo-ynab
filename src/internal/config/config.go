@@ -2,9 +2,11 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"reflect"
 )
 
 const configFileLocation = "/etc/monzo-ynab/config.json"
@@ -35,6 +37,24 @@ type Config struct {
 	MonzoAccessToken string `json:"MONZO_ACCESS_TOKEN"` // Access Token for Monzo
 
 	BaseURL string `json:"BASE_URL"` // The sync app's URL
+}
+
+// Set sets a value in the config
+func (c *Config) Set(key string, value string) error {
+	point := reflect.ValueOf(c)
+	struc := point.Elem()
+	field := struc.FieldByName(key)
+	if field.IsValid() && field.CanSet() {
+		field.SetString(value)
+	} else {
+		return fmt.Errorf("Could not set %s", key)
+	}
+
+	err := c.Persist()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // Persist saves the config to the config file in `configFileLocation`.
