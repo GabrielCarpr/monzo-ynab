@@ -20,7 +20,7 @@ func Test_ImportsTransactions(t *testing.T) {
 				"id":          "tx_ffi39fjkls",
 				"description": "test transaction",
 				"amount":      2500,
-				"settled":     "2020-12-25T12:25:00Z",
+				"created":     "2020-12-25T12:25:00Z",
 			},
 		},
 	}

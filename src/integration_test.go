@@ -22,7 +22,7 @@ func TestMonzoWebhook(t *testing.T) {
 			"id":          "123",
 			"description": "test",
 			"amount":      6900,
-			"settled":     "2020-12-25T12:00:59Z",
+			"created":     "2020-12-25T12:00:59Z",
 		},
 	}
 
