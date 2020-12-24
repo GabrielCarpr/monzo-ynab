@@ -16,7 +16,7 @@ type Transaction struct {
 	ID          string `json:"id"`
 	Description string `json:"description"`
 	Amount      int    `json:"amount"`
-	Settled     string `json:"settled"`
+	Created     string `json:"created"`
 }
 
 type transactionsResponse struct {
@@ -29,7 +29,7 @@ type transactionResponse struct {
 
 // Transaction converts a Monzo transaction to a domain Transaction.
 func (t Transaction) Transaction() domain.Transaction {
-	date, _ := time.Parse(time.RFC3339, t.Settled)
+	date, _ := time.Parse(time.RFC3339, t.Created)
 	return domain.Transaction{
 		Amount:      t.Amount,
 		Date:        date,

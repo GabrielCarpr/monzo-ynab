@@ -2,6 +2,7 @@ package ynab
 
 import (
 	"fmt"
+	"log"
 
 	"monzo-ynab/domain"
 	"monzo-ynab/internal/config"

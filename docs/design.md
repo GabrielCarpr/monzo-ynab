@@ -34,15 +34,7 @@ CLI can be used for a one time sync, or to start a webhook server which accepts 
 
 When running as an app, or even locally, a web interface can be started which will offer more insight into transactions (premium only?).
 
-### Example installation flow
-
-```
-./monzo-ynab install
-What's your YNAB personal API token?
-> 
-
-```
-
+## Implementation
 ### CLI options
 ```
 install
@@ -51,15 +43,6 @@ set-option <option> <value>
 sync <previous days>
 ```
 
-## Implementation
-- Use PromptUI for CLI, which easily creates an interactive console application
-
-
 ## Questions
-- Will YNAB dedupe transactions automatically?
-- How do I sync a bunch of transactions?
 - On receipt of a webhook from Monzo, how do I verify it's validity?
-- Will I need to request other information from Monzo before sending it to YNAB?
-- Will I need to perform any other operations on YNAB before sending the transaction?
-    - As long as I have the budget ID, and the account ID, I can use all the information from the transaction in Monzo to create the YNAB transaction.
 - How do I let users authenticate with Monzo?

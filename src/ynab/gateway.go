@@ -80,7 +80,7 @@ type Gateway struct {
 func (g Gateway) CreateTransaction(transaction Transaction) error {
 	goBody := client.JSONBody{"transaction": transaction}
 
-	status, _, err := g.client.POST(
+	status, body, err := g.client.POST(
 		fmt.Sprintf("%s/budgets/%s/transactions", ynabAPI, g.config.YNABBudgetID),
 		goBody,
 	)
@@ -89,11 +89,11 @@ func (g Gateway) CreateTransaction(transaction Transaction) error {
 	}
 
 	if status == 201 {
-		log.Printf("Added transaction %s", transaction.Memo)
+		log.Printf("Added transaction %s (%s)", transaction.Memo, transaction.ImportID)
 		return nil
 	}
 	if status == 400 {
-		return fmt.Errorf("CreateTransaction: Bad request")
+		return fmt.Errorf("CreateTransaction: Bad request - %v", string(body))
 	}
 	if status == 409 {
 		log.Printf("Transaction already exists")
